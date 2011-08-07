@@ -12,7 +12,8 @@ Besides that:
 * Converts Vimeo urls into embedded videos. 
 * Detects urls and converts into anchors.
 
-
+You can check the generated Rocco documentation on the [project
+page](http://josem.github.com/extended_markdownizer/).
 
 ##Install
 
@@ -70,7 +71,7 @@ And then, in your view you just have to call `<%= raw @post.rendered_body %>` :)
 
 ##TODO
 * Update specs
-* Fix rocco docs
+* Improve docs
 
 ## Copyright
 Markdown: Copyright (c) 2011 Codegram. See LICENSE for details.
