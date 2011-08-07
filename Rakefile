@@ -4,9 +4,9 @@ Bundler::GemHelper.install_tasks
 # Bring in Rocco tasks
 require 'rocco/tasks'
 require 'rake/clean'
-Rocco::make 'docs/', 'lib/markdownizer.rb'
+Rocco::make 'docs/', 'lib/extended_markdownizer.rb'
 
-desc 'Build markdownizer docs'
+desc 'Build extended_markdownizer docs'
 task :docs => :rocco
 directory 'docs/'
 
@@ -15,9 +15,9 @@ task :read => :docs do
   sh 'open docs/lib/rocco.html'
 end
 
-# Make index.html a copy of markdownizer.html
-file 'docs/index.html' => 'docs/lib/markdownizer.html' do |f|
-  cp 'docs/lib/markdownizer.html', 'docs/index.html', :preserve => true
+# Make index.html a copy of extended_markdownizer.html
+file 'docs/index.html' => ['docs/lib/extended_markdownizer.html'] do |f|
+  cp 'docs/lib/extended_markdownizer.html', 'docs/index.html', :preserve => true
 end
 task :docs => 'docs/index.html'
 CLEAN.include 'docs/index.html'

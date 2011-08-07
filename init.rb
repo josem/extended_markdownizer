@@ -1,1 +1,1 @@
-require 'markdownizer'
+require 'extended_markdownizer'

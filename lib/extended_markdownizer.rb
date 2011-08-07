@@ -1,4 +1,4 @@
-# **Markdownizer** is a simple solution to a simple problem.
+# **ExtendedMarkdownizer** is a simple solution to a simple problem.
 #
 # It is a lightweight Rails 3 gem which enhances any ActiveRecord model with a
 # singleton `markdownize!` method, which makes any text attribute renderable as
@@ -9,26 +9,26 @@
 # fork it and submit a nice pull request :)
 #
 
-#### Install Markdownizer
+#### Install ExtendedMarkdownizer
 
-# Get Markdownizer in your Rails 3 app through your Gemfile:
+# Get ExtendedMarkdownizer in your Rails 3 app through your Gemfile:
 #
-#     gem 'markdownizer'
+#     gem 'extended_markdownizer'
 #
-# If you don't use Bundler, you can alternatively install Markdownizer with
+# If you don't use Bundler, you can alternatively install ExtendedMarkdownizer with
 # Rubygems:
 #
-#     gem install markdownizer
+#     gem install extended_markdownizer
 #
 # If you want code highlighting, you should run this generator too:
 #
-#     rails generate markdownizer:install
+#     rails generate extended_markdownizer:install
 #
 # This will place a `markdownizer.css` file in your `public/stylesheets`
 # folder. You will have to require it manually in your layouts, or through
 # `jammit`, or whatever.
 # 
-# [gh]: http://github.com/codegram/markdownizer
+# [gh]: http://github.com/josem/markdownizer
 
 #### Usage
 
@@ -76,13 +76,13 @@ require 'rdiscount'
 require 'coderay'
 require 'active_record' unless defined?(ActiveRecord)
 
-module Markdownizer
+module ExtendedMarkdownizer
 
   class << self
     # Here we define two helper methods. These will be called from the model to
     # perform the corresponding conversions and parsings.
    
-    # `Markdownizer.markdown` method converts plain Markdown text to formatted html.
+    # `ExtendedMarkdownizer.markdown` method converts plain Markdown text to formatted html.
     # To parse the markdown in a coherent hierarchical context, you must provide it
     # with the current hierarchical level of the text to be parsed.
     def markdown(text, hierarchy = 0)
@@ -93,7 +93,7 @@ module Markdownizer
       RDiscount.new(text).to_html
     end
 
-    # `Markdownizer.coderay` method parses a code block delimited from `{% code
+    # `ExtendedMarkdownizer.coderay` method parses a code block delimited from `{% code
     # ruby %}` until `{% endcode %}` and replaces it with appropriate classes for
     # code highlighting. It can take many languages aside from Ruby.
     #
@@ -133,6 +133,36 @@ module Markdownizer
               "</div>"
       end
     end
+    
+    # `ExtendedMarkdownizer.urls_into_anchors` method converts the urls in the text into anchors
+    def urls_into_anchors(text)
+      text.gsub(/^(((http|https):\/\/)?)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/ix) do |url|
+        if ($1 != 'http://')
+          uri = 'http://' + url
+          return "<a target=\"_blank\" href=\"#{uri}\">#{url}</a>"
+        else
+          return "<a target=\"_blank\" href=\"#{url}\">#{url}</a>"
+        end
+      end
+    end
+    
+    # `ExtendedMarkdownizer.youtube_embedded_videos` method converts the youtube urls into an embedded video
+    # Another way to do the same: 
+    # http://stackoverflow.com/questions/3552228/ruby-on-rails-get-url-string-parameters/3552311#3552311
+    def youtube_embedded_videos(text)
+      text.gsub(/^(http:\/\/)?(www.)?youtube.com\/watch\?v=([a-zA-Z0-9_]+)(&(.*))?$/ix) do |url|
+        iframe = '<iframe width="560" height="349" src="http://www.youtube.com/embed/' + $3.to_s + '?rel=0" frameborder="0" allowfullscreen></iframe>'
+        return iframe
+      end
+    end
+    
+    # `ExtendedMarkdownizer.vimeo_embedded_videos` method converts the vimeo urls into an embedded video
+    def vimeo_embedded_videos(text)
+      text.gsub(/^(http:\/\/)?(www.)?vimeo.com\/([a-zA-Z0-9_]+)$/ix) do |url|
+        iframe = '<iframe src="http://player.vimeo.com/video/'+ $3.to_s + '?byline=0&amp;portrait=0" width="560" height="315" frameborder="0"></iframe>'
+        return iframe
+      end
+    end
 
     private
 
@@ -161,27 +191,27 @@ module Markdownizer
 
   #### Public interface
   
-  # The Markdownizer DSL is the public interface of the gem, and can be called
+  # The ExtendedMarkdownizer DSL is the public interface of the gem, and can be called
   # from any ActiveRecord model.
   module DSL
 
-    # Calling `markdownize! :attribute` (where `:attribute` can be any database
+    # Calling `extended_markdownize! :attribute` (where `:attribute` can be any database
     # attribute with type `text`) will treat this field as Markdown.
     # You can pass an `options` hash for CodeRay. An example option would be:
     #   
     #   * `:line_numbers => :table` (or `:inline`)
     #
     # You can check other available options in CodeRay's documentation.
-    def markdownize! attribute, options = {}
+    def extended_markdownize! attribute, options = {}
       # Check that both `:attribute` and `:rendered_attribute` columns exist.
       # If they don't, it raises an error indicating that the user should generate
       # a migration.
       unless self.column_names.include?(attribute.to_s) &&
-               self.column_names.include?("rendered_#{attribute}")
+              self.column_names.include?("rendered_#{attribute}")
         raise "#{self.name} doesn't have required attributes :#{attribute} and :rendered_#{attribute}\nPlease generate a migration to add these attributes -- both should have type :text."
       end
 
-      # The `:hierarchy` option tells Markdownizer the smallest header tag that
+      # The `:hierarchy` option tells ExtendedMarkdownizer the smallest header tag that
       # precedes the Markdown text. If you have a blogpost with an H1 (title) and
       # an H2 (some kind of tagline), then your hierarchy is 2, and the biggest
       # header found the markdown text will be translated directly to an H3. This
@@ -196,7 +226,10 @@ module Markdownizer
       # Define the converter method, which will assign the rendered html to the
       # `:rendered_attribute` field.
       define_method :"render_#{attribute}" do
-        self.send(:"rendered_#{attribute}=", Markdownizer.markdown(Markdownizer.coderay(self.send(attribute), options), hierarchy))
+        processed_attribute = ExtendedMarkdownizer.youtube_embedded_videos(self.send(attribute)) 
+        processed_attribute = ExtendedMarkdownizer.vimeo_embedded_videos(processed_attribute) 
+        processed_attribute = ExtendedMarkdownizer.urls_into_anchors(processed_attribute) 
+        self.send(:"rendered_#{attribute}=", ExtendedMarkdownizer.markdown(ExtendedMarkdownizer.coderay(processed_attribute, options), hierarchy))
       end
     end
   end
@@ -204,6 +237,6 @@ module Markdownizer
 end
 
 # Finally, make our DSL available to any class inheriting from ActiveRecord::Base.
-ActiveRecord::Base.send(:extend, Markdownizer::DSL)
+ActiveRecord::Base.send(:extend, ExtendedMarkdownizer::DSL)
 
 # And that's it!
