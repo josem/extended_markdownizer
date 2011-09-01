@@ -163,6 +163,23 @@ module ExtendedMarkdownizer
         return iframe
       end
     end
+    
+    def detect_images(text)
+      text.gsub(/^(((http|https):\/\/)?)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/ix) do |url|
+        uri = url
+        if ($1 != 'http://')
+          uri = 'http://' + url
+        end
+        # Let's check if it's an image
+        if FastImage.type(url) != nil
+          return '<img src="'+uri+'">'
+        else
+          return "<a target=\"_blank\" href=\"#{uri}\">#{url.capitalize}</a>"
+        end
+        
+      end
+      
+    end
 
     private
 
@@ -228,6 +245,7 @@ module ExtendedMarkdownizer
       define_method :"render_#{attribute}" do
         processed_attribute = ExtendedMarkdownizer.youtube_embedded_videos(self.send(attribute)) 
         processed_attribute = ExtendedMarkdownizer.vimeo_embedded_videos(processed_attribute) 
+        processed_attribute = ExtendedMarkdownizer.detect_images(processed_attribute) 
         processed_attribute = ExtendedMarkdownizer.urls_into_anchors(processed_attribute) 
         self.send(:"rendered_#{attribute}=", ExtendedMarkdownizer.markdown(ExtendedMarkdownizer.coderay(processed_attribute, options), hierarchy))
       end
