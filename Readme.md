@@ -71,8 +71,8 @@ You save your posts with markdown text like this:
 And then, in your view you just have to call `<%= raw @post.rendered_body %>` :)
 
 ##CHANGELOG
-0.1.3 Added image detection, so when the urls to images are detected and converted into img elements
-0.1.2 First version (because I was playing with the 0.1.1 so it doesn't count)
+* 0.1.3 Added image detection, so when the urls to images are detected and converted into img elements
+* 0.1.2 First version (because I was playing with the 0.1.1 so it doesn't count)
 
 ##TODO
 * Update specs
