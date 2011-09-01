@@ -10,6 +10,7 @@ Besides that:
 
 * Converts Youtube urls into embedded videos. 
 * Converts Vimeo urls into embedded videos. 
+* Converts image urls into the img element.
 * Detects urls and converts into anchors.
 
 You can check the generated Rocco documentation on the [project
@@ -69,6 +70,10 @@ You save your posts with markdown text like this:
 
 And then, in your view you just have to call `<%= raw @post.rendered_body %>` :)
 
+##CHANGELOG
+0.1.3 Added image detection, so when the urls to images are detected and converted into img elements
+0.1.2 First version (because I was playing with the 0.1.1 so it doesn't count)
+
 ##TODO
 * Update specs
 * Improve docs
@@ -76,3 +81,4 @@ And then, in your view you just have to call `<%= raw @post.rendered_body %>` :)
 ## Copyright
 Markdown: Copyright (c) 2011 Codegram. See LICENSE for details.
 Extended Markdown: Copyright (c) 2011 José M. Gilgado
+
